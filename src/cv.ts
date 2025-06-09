@@ -15,28 +15,4 @@ export default {
         github: "https://github.com/ghostfuel/",
         website: "TODO",
     },
-    skills: [
-        "JavaScript",
-        "TypeScript",
-        "React",
-        "Node.js",
-        "AWS",
-        "IaC (Terraform, CloudFormation, Serverless)",
-        "Testing (Jest, Playwright)",
-        "CI/CD (GitHub Actions, Docker)",
-    ],
-    experience: [
-        {
-            company: "Immersive Labs",
-            position: "Lead Software Engineer",
-            duration: "2022 - Present",
-            description: "Leading a team of engineers to build secure and scalable applications.",
-        },
-        {
-            company: "Civil Service",
-            position: "Senior Software Engineer",
-            duration: "2017 - 2022",
-            description: "Developed and maintained applications with a focus on security and performance.",
-        }
-    ],
 }
