@@ -80,8 +80,6 @@ export default function App() {
         commandHelp("clear", "Clear the terminal screen"),
         commandHelp("exit", "Close CV Terminal"),
         commandHelp("help", "Show this help message"),
-        commandHelp("clear", "Clear the terminal screen"),
-        commandHelp("exit", "Close CV Terminal"),
       ],
     },
     whoami: {
