@@ -32,7 +32,7 @@ export default function App() {
 
   const commandHelp = (command: Command, description: string) => (
     <div className="ml-4 flex">
-      <div className="w-35">{clickableCommand(command)}</div>
+      <div className="w-28">{clickableCommand(command)}</div>
       <div>- {description}</div>
     </div>
   )
