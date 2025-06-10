@@ -1,49 +1,103 @@
-import type React from "react"
-import { useEffect, useRef, useState } from "react"
-import cv from "./cv"
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react"
+
+type Command = "help" | "whoami" | "experience" | "skills" | "education" | "contact" | "projects" | "clear" | "exit"
+type CommandMap = {
+  [key in Command]: {
+    description: string
+    output: string[] | ReactNode[]
+  }
+}
 
 interface CommandHistory {
   command: string
-  output: string[]
+  output: string[] | ReactNode[]
   timestamp: Date
 }
 
 export default function App() {
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>([])
   const [currentCommand, setCurrentCommand] = useState("")
-  const [isBooting, setIsBooting] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const terminalRef = useRef<HTMLDivElement>(null)
 
-  const commands = {
+  const clickableCommand = (command: Command) => (
+    <span
+      className="clickable-command cursor-pointer text-cyan-400 hover:text-cyan-300 underline decoration-dotted"
+      onClick={() => executeCommand(command)}
+    >
+      {command}
+    </span>
+  )
+
+  const commandHelp = (command: Command, description: string) => (
+    <div className="ml-4 flex">
+      <div className="w-35">{clickableCommand(command)}</div>
+      <div>- {description}</div>
+    </div>
+  )
+
+  const cv = {
+    name: "Mitchell Bellamy",
+    currentTitle: "Lead Software Engineer",
+    location: "Gloucestershire, UK",
+    about: [
+      "Software engineer with a background in building full stack products and platforms.",
+      (<>Over 8 years' {clickableCommand("experience")} across engineering disciplines and tech stacks.</>),
+      "Excited to be part of, and help shape, powerful teams.",
+      "A passion for inclusive and effective team culture, engineering impactful tools and exploring new technologies and ideas.",
+    ],
+    contact: {
+      email: "TODO",
+      linkedin: "https://www.linkedin.com/in/mitchell-b-49b7aa24a/",
+      github: "https://github.com/ghostfuel/",
+      website: "TODO",
+    }
+  }
+
+  const externalLink = (href: string, text?: string) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-cyan-400 hover:text-cyan-300 underline decoration-dotted"
+    >
+      {text || href}
+    </a>
+  )
+
+  const commands: CommandMap = {
     help: {
       description: "Show available commands",
       output: [
         "Available commands:",
-        "  whoami          - Display summary",
-        "  experience      - List current and past job roles",
-        "  skills          - Display technical skills",
-        "  education       - Show educational background",
-        "  contact         - Display contact information",
-        "  projects        - List personal projects",
-        "  clear           - Clear screen",
-        "  exit            - Close CV Terminal",
+        commandHelp("whoami", "Display user information"),
+        commandHelp("experience", "List work experience"),
+        commandHelp("skills", "Display technical skills"),
+        commandHelp("education", "Show educational background"),
+        commandHelp("contact", "Display contact information"),
+        commandHelp("projects", "List personal projects"),
+        commandHelp("clear", "Clear the terminal screen"),
+        commandHelp("exit", "Close CV Terminal"),
+        commandHelp("help", "Show this help message"),
+        commandHelp("clear", "Clear the terminal screen"),
+        commandHelp("exit", "Close CV Terminal"),
       ],
     },
     whoami: {
       description: "Display user information",
       output: [
-        cv.name,
-        cv.currentTitle,
-        cv.location,
-        " ",
-        ...cv.about,
-        " ",        
-        // `📧 Email:      ${cv.contact.email}`,
-        `🐙 GitHub:     ${cv.contact.github}`,
-        `💼 LinkedIn:   ${cv.contact.linkedin}`,
-        // `🌐 Website:    ${cv.contact.website}`,
-      ],
+        (<div>{cv.name}</div>),
+        (<div>{cv.currentTitle}</div>),
+        (<div>{cv.location}</div>),
+        (<div className="mt-4">{cv.about.map((line, index) => <div key={index}>{line}</div>)}</div>),
+        (<div className="flex items-center gap-4 flex-wrap mt-4">
+          {/* <div>📧 Email:      {cv.contact.email}</div> */}
+          <span>🐙 {externalLink(cv.contact.github, "GitHub")}</span>
+          <span>💼 {externalLink(cv.contact.linkedin, "LinkedIn")}</span>
+          {/* <div>🌐 Website:    {cv.contact.website}</div> */}
+        </div>),
+      ]
     },
     experience: {
       description: "List work experience",
@@ -71,7 +125,7 @@ export default function App() {
         "   • Began to develop full stack (MEAN) applications for analysts",
         "   • Created tools to automate data processing and reporting",
         " ",
-        "🎓 See also: education, skills, projects",
+        (<>🎓 See also: {clickableCommand("education")}, {clickableCommand("skills")}, {clickableCommand("projects")}</>)
       ],
     },
     skills: {
@@ -93,7 +147,7 @@ export default function App() {
         "   Kubernetes ██████               30%",
         "   CI/CD      █████████████████    80%",
         " ",
-        "🚀 See my work: projects, experience",
+        (<>🚀 See my work: {clickableCommand("projects")}, {clickableCommand("experience")}</>),
       ],
     },
     education: {
@@ -105,61 +159,40 @@ export default function App() {
         "📜 Certifications:",
         "    AWS Certified Practitioner (2020)",
         " ",
-        "💼 See related; skills, experience",
+        (<>💼 See also: {clickableCommand("experience")}, {clickableCommand("skills")}</>),
       ],
     },
     contact: {
       description: "Display contact information",
       output: [
-        `📧 Email:    ${cv.contact.email}`,
+        // TODO: `📧 Email:    ${cv.contact.email}`,
         `📍 Location: ${cv.location}`,
         " ",
-        `🐙 GitHub:   ${cv.contact.github}`,
-        `💼 LinkedIn: ${cv.contact.linkedin}`,
-        `🌐 Website:  ${cv.contact.website}`,
+        (<>🐙 {externalLink(cv.contact.github, "GitHub")}</>),
+        (<>💼 {externalLink(cv.contact.linkedin, "LinkedIn")}</>),
+        // TODO: `🌐 Website:  ${cv.contact.website}`,
         " ",
-        "Feel free to reach out! I'm always open to interesting",
-        "opportunities and conversations about technology.",
+        "Feel free to reach out! I'm always open to interesting opportunities!",
       ],
     },
     projects: {
       description: "List personal projects",
       output: [
-        "🔧 www.amplified.tools",
+        (<>🔧 {externalLink("https://www.amplified.tools", "amplified.tools")}</>),
         "   Tools for automating Spotify playlists and music discovery",
         "   Tech: AWS, Serverless, TypeScript, Node.js, Bun, React, Tailwind",
-        `   ${cv.contact.github}/amplified-tools`,
       ],
-    }
+    },
+    clear: {
+      description: "Clear the terminal screen",
+      output: [],
+    },
+    exit: {
+      description: "Close CV Terminal",
+      output: ["Goodbye! Thanks for visiting my CV.", "Connection closed."],
+    },
   }
 
-  // Function to make commands in text clickable
-  const makeCommandsClickable = (text: string) => {
-    const commandNames = Object.keys(commands)
-    let result = text
-
-    commandNames.forEach((cmd) => {
-      // Create a regex that matches the command as a whole word
-      const regex = new RegExp(`\\b${cmd}\\b`, "g")
-      result = result.replace(
-        regex,
-        `<span class="clickable-command cursor-pointer text-cyan-400 hover:text-cyan-300 underline decoration-dotted" data-command="${cmd}">${cmd}</span>`,
-      )
-    })
-
-    return result
-  }
-
-  // Handle clicking on commands in the output
-  const handleCommandClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    if (target.classList.contains("clickable-command")) {
-      const command = target.getAttribute("data-command")
-      if (command) {
-        executeCommand(command)
-      }
-    }
-  }
 
   // Starship-style prompt component
   const StarshipPrompt = ({ showCursor = false, command = "" }: { showCursor?: boolean, command?: string }) => (
@@ -186,7 +219,6 @@ export default function App() {
   )
 
   useEffect(() => {
-    // Auto-type initial commands
     const autoTypeCommands = async () => {
       await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -194,27 +226,24 @@ export default function App() {
       setCommandHistory([
         {
           command: "",
-          // Show current year in the output
           output: ["CV Terminal v0.1.0", `${new Date().getFullYear()} ${cv.name}`],
           timestamp: new Date(),
         },
       ])
 
       await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Auto-type 'whoami' command
       await typeCommand("whoami")
       await new Promise((resolve) => setTimeout(resolve, 1000))
       await typeCommand("help")
 
-      setIsBooting(false)
+      setIsLoading(false)
       if (inputRef.current) {
         inputRef.current.focus()
       }
     }
 
     autoTypeCommands()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const typeCommand = (cmd: string): Promise<void> => {
@@ -316,7 +345,7 @@ export default function App() {
     setCurrentCommand("")
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       executeCommand(currentCommand)
     }
@@ -328,7 +357,6 @@ export default function App() {
       <div
         ref={terminalRef}
         className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600"
-        onClick={handleCommandClick}
       >
         {/* Command history */}
         {commandHistory.map((entry, index) => (
@@ -339,17 +367,15 @@ export default function App() {
               </div>
             )}
             {entry.output.map((line, lineIndex) => (
-              <div
-                key={lineIndex}
-                className="text-gray-300 whitespace-pre-wrap ml-6"
-                dangerouslySetInnerHTML={{ __html: makeCommandsClickable(line) }}
-              />
+              <div key={lineIndex} className="text-gray-300 whitespace-pre-wrap ml-4">
+                {line}
+              </div>
             ))}
           </div>
         ))}
 
         {/* Current input line */}
-        {!isBooting && (
+        {!isLoading && (
           <div className="mb-1">
             <StarshipPrompt />
             <div className="flex items-center gap-2 mt-1">
@@ -362,8 +388,9 @@ export default function App() {
                 onKeyPress={handleKeyPress}
                 className="flex-1 bg-transparent text-white outline-none"
                 autoFocus
+                autoCapitalize="none"
                 spellCheck={false}
-                placeholder="Type a command or tap any highlighted command above..."
+                placeholder="type a command or tap any highlighted command..."
               />
             </div>
           </div>
