@@ -49,7 +49,7 @@ export default function App() {
     ],
     contact: {
       email: "TODO",
-      linkedin: "https://www.linkedin.com/in/mitchell-b-49b7aa24a/",
+      linkedin: "https://www.linkedin.com/in/mitchell-bellamy/",
       github: "https://github.com/ghostfuel/",
       website: "TODO",
     }
